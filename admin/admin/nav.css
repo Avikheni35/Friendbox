@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+body{
+    overflow-x: hidden;
+}
+.image{
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    /* font-weight: bolder; */
+    font-size: 20px;
+    width: 100%;
+    font-family: VT323;
+    color: white;
+    padding: 5px;
+}
+.image::after{
+    content: "Admin";
+    font-size:25px;
+    /* margin-left: 10px; */
+}
+nav{
+    background-color: #82a7b3  !important;
+    color: #000;
+    width: 15vw;
+    /* padding: 15px; */
+    flex-direction: column;
+    position: sticky;
+    height: 100vh;
+    display: inline-flex;
+
+}
+nav .upper{
+    /* background-color:#21a6e6 ; */
+    padding: 15px;
+    height: -webkit-fill-available;
+}
+nav a{
+    color: #000;
+    text-decoration: none;
+}
+nav .active{
+    color: #9eeaff;
+}
+nav ul li{
+    list-style:none;
+    padding: 8px;
+    font: icon;
+}
+nav ul li a:hover{
+    color: #2c4545;
+}
+nav ul{
+    padding: 8px;
+    margin-top: 50px;
+}
+li i{
+    margin-right: 10px;
+}
