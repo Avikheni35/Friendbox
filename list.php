@@ -1,30 +1,39 @@
 <?php
-	session_start();
-	require("config.php");
-	$user = $_SESSION['username'];
-    $sql = "SELECT * from users where users.username in(select following from followings where followings.username='$user')
-	and users.username <> '$user'";
-    if(isset($_GET['viewprofile'])){
-        $viewuser = $_GET['viewprofile'];
-        $sql = "SELECT * from users where users.username in(select following from followings where followings.username='$viewuser')
-        and users.username <> '$viewuser'";
-    }
-    $result = $conn->query($sql);
-	
-	
+session_start();
+require("includes/config.php");
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    exit;
+}
+
+$user = $_SESSION['username'];
+
+if (isset($_GET['viewprofile'])) {
+    $viewuser = $_GET['viewprofile'];
+    $stmt = $conn->prepare(
+        "SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?"
+    );
+    $stmt->bind_param("ss", $viewuser, $viewuser);
+} else {
+    $stmt = $conn->prepare(
+        "SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?"
+    );
+    $stmt->bind_param("ss", $user, $user);
+}
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 <ul class="followers">
-						<?php
-							foreach($result as $row){
-						?>
-							<li>
-							<figure><img src="./userdata/profileimg/<?php echo $row['profile']; ?>" alt=""></figure>
-							<div class="friend-meta">
-								<h4><a href="" title=""><?php echo $row['name'] ?></a></h4>
-								<button class="view" type="submit" name="viewprofile" value="<?php echo $row['username']; ?>">View Profile</button>
-							</div>
-							</li>
-						<?php
-							}
-							?>
-				</ul>
+    <?php while ($row = $result->fetch_assoc()) { ?>
+    <li>
+        <figure>
+            <img src="./uploads/profileimg/<?php echo htmlspecialchars($row['profile']); ?>" alt="">
+        </figure>
+        <div class="friend-meta">
+            <h4><?php echo htmlspecialchars($row['name']); ?></h4>
+            <button class="view" type="button" name="viewprofile" value="<?php echo htmlspecialchars($row['username']); ?>">View Profile</button>
+        </div>
+    </li>
+    <?php } ?>
+</ul>

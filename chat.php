@@ -1,83 +1,68 @@
 <?php
-    session_start();
+session_start();
+if (!isset($_SESSION['username'])) {
+    header("location: login.php");
+    exit;
+}
+$user = $_SESSION['username'];
 ?>
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Friendbox</title>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
-    <link rel="stylesheet" href="css/general.css" />
-    <link rel="stylesheet" href="css/left-sidebar.css" />
-    <link rel="stylesheet" href="css/right-sidebar.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
-    <script src="chat.js"></script>
-    <script src="chatting.js"></script>
-    <script src="send.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <?php 
-     
-    ?>
-  
+    <link rel="icon" href="assets/images/fav.png" type="image/png" sizes="16x16">
+    <link rel="stylesheet" href="assets/css/main.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/color.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="assets/js/chat.js"></script>
+    <script src="assets/js/chatting.js"></script>
+    <script src="assets/js/send.js"></script>
+    <style>
+        .message-list { height: 80vh; overflow-y: scroll; }
+        .person-chat { height: 65vh; overflow-y: scroll; }
+        .chat-window { height: 80vh; display: flex; flex-direction: column; }
+    </style>
 </head>
-
 <body>
-    <div class="container-flexbox">
-        <div class="left-sidebar">
-            <div class="header">
-                <div>
-                    <a href="http://localhost/Friendbox/index.php" style="color:white"><i class="fa-solid fa-arrow-left"></i></a>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px">
-                    <h3><?php echo $_SESSION['username'] ?></h3>
-                    <div><img class="profile-pic" src="./userdata/profileimg/<?php echo $_SESSION['profile']?>" /></div>
-                </div>
-                
-            </div>
-
-            <div class="search-flexbox">
-                <div class="search-div">
-                    <button class="search-button">
-                        <ion-icon name="search-outline"></ion-icon>
-                    </button>
-                    <input class="searchbar" id="search" type="search " placeholder="Search to start new chat " />
-                </div>
-                
-            </div>
-
-            <div class="message-list">
-
-            </div>
-        </div>
-
-        <div class="right-sidebar">
-            <div class="active-inbox-header">
-
-            </div>
-
-            <div class="chat">
-                <div class="person-chat">
-
-                </div>
-
-                <div class="bottom-header">
-
-
-                    <div class="searchbar-bottom-head">
-                        <input class="searchbar-bottom-header" id="message" type="text " placeholder="Type a message" />
+    <div class="theme-layout">
+        <?php include("includes/nav.php"); ?>
+        <section>
+            <div class="gap gray-bg">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="central-meta">
+                                <div class="inbox-heading">
+                                    <h5>Inbox</h5>
+                                    <input type="text" id="search" placeholder="Search" class="form-control" />
+                                </div>
+                                <div class="message-list"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-9">
+                            <div class="central-meta chat-window">
+                                <div class="active-inbox-header"></div>
+                                <div class="person-chat"></div>
+                                <div class="chat-input" style="margin-top:auto;">
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="text" id="message" placeholder="Type a message..." class="form-control">
+                                        <button class="btn btn-primary send">Send</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="icon-bottom-header send" style="width: 50px">
-                        <ion-icon name="paper-plane-outline"></ion-icon>
-                    </div>
-
                 </div>
             </div>
-        </div>
+        </section>
+        <?php include("includes/footer.php"); ?>
     </div>
+    <script src="assets/js/main.min.js"></script>
 </body>
-
 </html>
