@@ -1,1 +1,4 @@
 *.php linguist-language=PHP
+assets/css/main.min.css linguist-vendored=true
+assets/js/*.min.js linguist-vendored=true
+assets/fonts/** linguist-vendored=true
