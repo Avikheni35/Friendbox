@@ -1,10 +1,16 @@
 <?php
-$conn = mysqli_connect("localhost", "root", "", "friendbox");
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
-if (!$conn) {
-    die("connection failed");
-} else {
-    error_reporting(E_ERROR | E_PARSE);
+try {
+    $conn = new mysqli("localhost", "root", "", "friendbox");
+    $conn->set_charset("utf8mb4");
+} catch (mysqli_sql_exception $e) {
+    error_log("DB connection failed: " . $e->getMessage());
+    http_response_code(500);
+    die("Service temporarily unavailable.");
 }
 
 function validateUpload($file, $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp']) {
