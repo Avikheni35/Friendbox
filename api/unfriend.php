@@ -10,7 +10,8 @@ if (!isset($_SESSION['username'])) {
 $user = $_SESSION['username'];
 
 if (isset($_POST['user'])) {
-    $username = $_POST['user'];
+    $username = trim($_POST['user']);
+    if (empty($username) || $username === $user) exit;
 
     $stmt = $conn->prepare("DELETE FROM followings WHERE username = ? AND following = ?");
     $stmt->bind_param("ss", $user, $username);

@@ -10,8 +10,9 @@ if (!isset($_SESSION['username'])) {
 $user = $_SESSION['username'];
 
 if (isset($_POST['shareto'])) {
-    $source   = $_POST['source'];
-    $selected = $_POST['shareto'];
+    $source   = trim($_POST['source'] ?? '');
+    $selected = trim($_POST['shareto']);
+    if (empty($source) || empty($selected)) exit;
 
     $stmt = $conn->prepare("INSERT INTO chat (username, user, posts, status) VALUES (?, ?, ?, 'sender')");
     $stmt->bind_param("sss", $user, $selected, $source);

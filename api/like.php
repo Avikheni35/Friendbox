@@ -11,6 +11,7 @@ $user = $_SESSION['username'];
 
 if (isset($_POST['pid'])) {
     $pid = (int)$_POST['pid'];
+    if ($pid <= 0) exit;
 
     $stmt = $conn->prepare("SELECT username FROM photos WHERE pid = ?");
     $stmt->bind_param("i", $pid);

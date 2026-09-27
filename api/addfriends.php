@@ -9,7 +9,8 @@ if (!isset($_SESSION['username'])) {
 
 if (isset($_POST['user'])) {
     $user     = $_SESSION['username'];
-    $username = $_POST['user'];
+    $username = trim($_POST['user']);
+    if (empty($username) || $username === $user) exit;
 
     $stmt = $conn->prepare("SELECT * FROM followings WHERE username = ? AND following = ?");
     $stmt->bind_param("ss", $user, $username);

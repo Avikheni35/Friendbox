@@ -13,7 +13,8 @@ $comments = null;
 
 if (isset($_POST['cmt']) && isset($_POST['pid'])) {
     $pid = (int)$_POST['pid'];
-    $cmt = $_POST['cmt'];
+    $cmt = trim($_POST['cmt']);
+    if ($pid <= 0 || empty($cmt)) exit;
 
     $stmt = $conn->prepare("SELECT users.username FROM photos JOIN users WHERE pid = ? AND users.username = photos.username");
     $stmt->bind_param("i", $pid);
