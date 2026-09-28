@@ -11,28 +11,33 @@ $user    = $_SESSION['username'];
 $pid     = 0;
 $comments = null;
 
-if (isset($_POST['cmt']) && isset($_POST['pid'])) {
-    $pid = (int)$_POST['pid'];
-    $cmt = trim($_POST['cmt']);
-    if ($pid <= 0 || empty($cmt)) exit;
+try {
+    if (isset($_POST['cmt']) && isset($_POST['pid'])) {
+        $pid = (int)$_POST['pid'];
+        $cmt = trim($_POST['cmt']);
+        if ($pid <= 0 || empty($cmt)) exit;
 
-    $stmt = $conn->prepare("SELECT users.username FROM photos JOIN users WHERE pid = ? AND users.username = photos.username");
-    $stmt->bind_param("i", $pid);
-    $stmt->execute();
-    $r        = $stmt->get_result()->fetch_assoc();
-    $postOwner = $r ? $r['username'] : '';
+        $stmt = $conn->prepare("SELECT users.username FROM photos JOIN users WHERE pid = ? AND users.username = photos.username");
+        $stmt->bind_param("i", $pid);
+        $stmt->execute();
+        $r        = $stmt->get_result()->fetch_assoc();
+        $postOwner = $r ? $r['username'] : '';
 
-    $stmt = $conn->prepare("INSERT INTO comments (pid, username, commentby, comment) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $pid, $postOwner, $user, $cmt);
-    $stmt->execute();
-}
+        $stmt = $conn->prepare("INSERT INTO comments (pid, username, commentby, comment) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $pid, $postOwner, $user, $cmt);
+        $stmt->execute();
+    }
 
-if (isset($_POST['pid'])) {
-    $pid = (int)$_POST['pid'];
-    $stmt = $conn->prepare("SELECT * FROM comments JOIN users WHERE pid = ? AND users.username = comments.username ORDER BY cid DESC");
-    $stmt->bind_param("i", $pid);
-    $stmt->execute();
-    $comments = $stmt->get_result();
+    if (isset($_POST['pid'])) {
+        $pid = (int)$_POST['pid'];
+        $stmt = $conn->prepare("SELECT * FROM comments JOIN users WHERE pid = ? AND users.username = comments.username ORDER BY cid DESC");
+        $stmt->bind_param("i", $pid);
+        $stmt->execute();
+        $comments = $stmt->get_result();
+    }
+} catch (mysqli_sql_exception $e) {
+    error_log("comments.php DB error: " . $e->getMessage());
+    exit;
 }
 
 if ($comments && $comments->num_rows > 0) {

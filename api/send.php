@@ -9,34 +9,35 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-if (isset($_POST['shareto'])) {
-    $source   = trim($_POST['source'] ?? '');
-    $selected = trim($_POST['shareto']);
-    if (empty($source) || empty($selected)) exit;
+try {
+    if (isset($_POST['shareto'])) {
+        $source   = trim($_POST['source'] ?? '');
+        $selected = trim($_POST['shareto']);
+        if (empty($source) || empty($selected)) exit;
 
-    $stmt = $conn->prepare("INSERT INTO chat (username, user, posts, status) VALUES (?, ?, ?, 'sender')");
-    $stmt->bind_param("sss", $user, $selected, $source);
-    $stmt->execute();
+        $stmt = $conn->prepare("INSERT INTO chat (username, user, posts, status) VALUES (?, ?, ?, 'sender')");
+        $stmt->bind_param("sss", $user, $selected, $source);
+        $stmt->execute();
 
-    $stmt = $conn->prepare("INSERT INTO chat (username, user, posts, status) VALUES (?, ?, ?, 'receiver')");
-    $stmt->bind_param("sss", $selected, $user, $source);
-    if (!$stmt->execute()) {
-        echo "failed";
+        $stmt = $conn->prepare("INSERT INTO chat (username, user, posts, status) VALUES (?, ?, ?, 'receiver')");
+        $stmt->bind_param("sss", $selected, $user, $source);
+        $stmt->execute();
+    } elseif (isset($_COOKIE['selected'])) {
+        $message  = trim($_POST['message'] ?? '');
+        if (empty($message)) exit;
+
+        $selected = $_COOKIE['selected'];
+
+        $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'sender')");
+        $stmt->bind_param("sss", $user, $selected, $message);
+        $stmt->execute();
+
+        $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'receiver')");
+        $stmt->bind_param("sss", $selected, $user, $message);
+        $stmt->execute();
     }
-} elseif (isset($_COOKIE['selected'])) {
-    $message  = isset($_POST['message']) ? trim($_POST['message']) : '';
-    if (empty($message)) {
-        exit;
-    }
-    $selected = $_COOKIE['selected'];
-
-    $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'sender')");
-    $stmt->bind_param("sss", $user, $selected, $message);
-    $stmt->execute();
-
-    $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'receiver')");
-    $stmt->bind_param("sss", $selected, $user, $message);
-    if (!$stmt->execute()) {
-        echo "failed";
-    }
+} catch (mysqli_sql_exception $e) {
+    error_log("send.php DB error: " . $e->getMessage());
+    http_response_code(500);
+    echo "failed";
 }

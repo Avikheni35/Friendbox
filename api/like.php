@@ -13,24 +13,28 @@ if (isset($_POST['pid'])) {
     $pid = (int)$_POST['pid'];
     if ($pid <= 0) exit;
 
-    $stmt = $conn->prepare("SELECT username FROM photos WHERE pid = ?");
-    $stmt->bind_param("i", $pid);
-    $stmt->execute();
-    $r = $stmt->get_result()->fetch_assoc();
-    $postOwner = $r ? $r['username'] : '';
+    try {
+        $stmt = $conn->prepare("SELECT username FROM photos WHERE pid = ?");
+        $stmt->bind_param("i", $pid);
+        $stmt->execute();
+        $r = $stmt->get_result()->fetch_assoc();
+        $postOwner = $r ? $r['username'] : '';
 
-    $stmt = $conn->prepare("SELECT * FROM likes WHERE likedby = ? AND pid = ?");
-    $stmt->bind_param("si", $user, $pid);
-    $stmt->execute();
-    $isliked = $stmt->get_result()->num_rows;
-
-    if ($isliked > 0) {
-        $stmt = $conn->prepare("DELETE FROM likes WHERE likedby = ? AND pid = ?");
+        $stmt = $conn->prepare("SELECT * FROM likes WHERE likedby = ? AND pid = ?");
         $stmt->bind_param("si", $user, $pid);
         $stmt->execute();
-    } else {
-        $stmt = $conn->prepare("INSERT INTO likes (username, likedby, pid) VALUES (?, ?, ?)");
-        $stmt->bind_param("ssi", $postOwner, $user, $pid);
+        $isliked = $stmt->get_result()->num_rows;
+
+        if ($isliked > 0) {
+            $stmt = $conn->prepare("DELETE FROM likes WHERE likedby = ? AND pid = ?");
+            $stmt->bind_param("si", $user, $pid);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO likes (username, likedby, pid) VALUES (?, ?, ?)");
+            $stmt->bind_param("ssi", $postOwner, $user, $pid);
+        }
         $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        error_log("like.php DB error: " . $e->getMessage());
+        http_response_code(500);
     }
 }

@@ -13,13 +13,16 @@ if (isset($_POST['user'])) {
     $username = trim($_POST['user']);
     if (empty($username) || $username === $user) exit;
 
-    $stmt = $conn->prepare("DELETE FROM followings WHERE username = ? AND following = ?");
-    $stmt->bind_param("ss", $user, $username);
-    if (!$stmt->execute()) {
-        echo "error";
-    }
+    try {
+        $stmt = $conn->prepare("DELETE FROM followings WHERE username = ? AND following = ?");
+        $stmt->bind_param("ss", $user, $username);
+        $stmt->execute();
 
-    $stmt = $conn->prepare("DELETE FROM followers WHERE username = ? AND followedby = ?");
-    $stmt->bind_param("ss", $username, $user);
-    $stmt->execute();
+        $stmt = $conn->prepare("DELETE FROM followers WHERE username = ? AND followedby = ?");
+        $stmt->bind_param("ss", $username, $user);
+        $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        error_log("unfriend.php DB error: " . $e->getMessage());
+        http_response_code(500);
+    }
 }
