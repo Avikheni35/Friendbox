@@ -14,6 +14,7 @@ if (isset($_POST['update'])) {
     $email    = $_POST['email'];
     $phone    = $_POST['phone'];
     $bio      = $_POST['bio'];
+    $error    = false;
 
     $destProfile = "./uploads/profileimg";
     $destCover   = "./uploads/coverimg";
@@ -22,44 +23,61 @@ if (isset($_POST['update'])) {
         $basename = safeUpload($_FILES['file'], $destProfile);
         if (!$basename) {
             echo '<script>alert("Profile image upload failed.")</script>';
-            goto done;
+            $error = true;
         }
     } else {
         $stmt = $conn->prepare("SELECT profile FROM users WHERE username = ?");
         $stmt->bind_param("s", $olduser);
         $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
+        $row      = $stmt->get_result()->fetch_assoc();
         $basename = $row['profile'];
     }
 
-    if (!empty($_FILES['cover']['name'])) {
-        $basename2 = safeUpload($_FILES['cover'], $destCover);
-        if (!$basename2) {
-            echo '<script>alert("Cover image upload failed.")</script>';
-            goto done;
+    if (!$error) {
+        if (!empty($_FILES['cover']['name'])) {
+            $basename2 = safeUpload($_FILES['cover'], $destCover);
+            if (!$basename2) {
+                echo '<script>alert("Cover image upload failed.")</script>';
+                $error = true;
+            }
+        } else {
+            $stmt = $conn->prepare("SELECT coverpic FROM users WHERE username = ?");
+            $stmt->bind_param("s", $olduser);
+            $stmt->execute();
+            $row       = $stmt->get_result()->fetch_assoc();
+            $basename2 = $row['coverpic'];
         }
-    } else {
-        $stmt = $conn->prepare("SELECT coverpic FROM users WHERE username = ?");
-        $stmt->bind_param("s", $olduser);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $basename2 = $row['coverpic'];
     }
 
-    $stmt = $conn->prepare("UPDATE users SET username=?, name=?, email=?, phone=?, profile=?, coverpic=?, bio=? WHERE username=?");
-    $stmt->bind_param("ssssssss", $username, $name, $email, $phone, $basename, $basename2, $bio, $olduser);
+    if (!$error) {
+        if (!empty($_POST['password'])) {
+            $pass = password_hash($_POST['password'], PASSWORD_BCRYPT);
+        } else {
+            $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+            $stmt->bind_param("s", $olduser);
+            $stmt->execute();
+            $row  = $stmt->get_result()->fetch_assoc();
+            $pass = $row['password'];
+        }
 
-    if ($stmt->execute()) {
-        $_SESSION['username'] = $username;
-        $_SESSION['profile']  = $basename;
-        $_SESSION['coverpic'] = $basename2;
-        $_SESSION['name']     = $name;
-        header("location: photos.php");
-        exit;
-    } else {
-        echo '<script>alert("Update failed. Username may already be taken.")</script>';
+        try {
+            $stmt = $conn->prepare("UPDATE users SET username=?, name=?, email=?, phone=?, password=?, profile=?, coverpic=?, bio=? WHERE username=?");
+            $stmt->bind_param("sssssssss", $username, $name, $email, $phone, $pass, $basename, $basename2, $bio, $olduser);
+            if ($stmt->execute()) {
+                $_SESSION['username'] = $username;
+                $_SESSION['profile']  = $basename;
+                $_SESSION['coverpic'] = $basename2;
+                $_SESSION['name']     = $name;
+                header("location: photos.php");
+                exit;
+            } else {
+                echo '<script>alert("Update failed. Username may already be taken.")</script>';
+            }
+        } catch (mysqli_sql_exception $e) {
+            error_log("updateprofile.php DB error: " . $e->getMessage());
+            echo '<script>alert("Update failed. Username may already be taken.")</script>';
+        }
     }
-    done:
 }
 
 $user = $_SESSION['username'];

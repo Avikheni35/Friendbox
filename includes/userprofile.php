@@ -44,6 +44,12 @@ while ($row = $userdata->fetch_assoc()) {
     $src      = "uploads/profileimg/" . $img;
 }
 
+if (empty($uname)) {
+    http_response_code(404);
+    echo '<p style="text-align:center;padding:40px;">User not found.</p>';
+    exit;
+}
+
 if (isset($_POST['addfriend'])) {
     $viewusername = $_POST['addfriend'];
     $stmt = $conn->prepare("SELECT * FROM followings WHERE username = ? AND following = ?");
