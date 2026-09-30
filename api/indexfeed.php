@@ -40,14 +40,6 @@ if (isset($_GET['req'])) {
 }
 $stmt->execute();
 $feed = $stmt->get_result();
-
-while ($row = $feed->fetch_assoc()) {
-    $pid = $row['pid'];
-
-    $stmt2 = $conn->prepare("SELECT * FROM comments WHERE pid = ?");
-    $stmt2->bind_param("i", $pid);
-    $stmt2->execute();
-    $totalcomments = $stmt2->get_result()->num_rows;
 ?>
 <style>
     .modal a.close-modal { position: absolute; top: 2.5px; right: 1px; }
@@ -57,6 +49,14 @@ while ($row = $feed->fetch_assoc()) {
     .userimg { display:flex; justify-content:center; background-color:aliceblue; }
     .friend-info figure img { width:50px; height:50px !important; object-fit:cover; }
 </style>
+<?php
+while ($row = $feed->fetch_assoc()) {
+    $pid = $row['pid'];
+
+    $stmt2 = $conn->prepare("SELECT * FROM comments WHERE pid = ?");
+    $stmt2->bind_param("i", $pid);
+    $stmt2->execute();
+    $totalcomments = $stmt2->get_result()->num_rows;
 <div class="central-meta item">
     <div class="user-post">
         <div class="friend-info">
