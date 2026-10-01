@@ -23,17 +23,16 @@
         </thead>
 
         <?php
-            require("config.php");
-            if(isset($_POST["search"])){
-                $search = $_POST["search"];
-                $query="select * from users where username like '%$search%' ";
-
+            if (isset($_POST["search"]) && $_POST["search"] !== '') {
+                $search = '%' . $_POST["search"] . '%';
+                $stmt = $conn->prepare("SELECT * FROM users WHERE username LIKE ?");
+                $stmt->bind_param("s", $search);
+            } else {
+                $stmt = $conn->prepare("SELECT * FROM users");
             }
-            else{
-                $query="select * from users";
-            }
-            $result = mysqli_query($conn,$query);
-            foreach($result as $row){
+            $stmt->execute();
+            $result = $stmt->get_result();
+            foreach ($result as $row) {
                 ?>
         <tr>
             <td><?php echo $row["username"] ?></td>

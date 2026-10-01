@@ -2,27 +2,24 @@
 include("config.php");
 session_start();
 
-if(isset($_SESSION['adminuser'])){
+if (isset($_SESSION['adminuser'])) {
     header("location: users.php");
-
+    exit;
 }
-if(isset($_POST['login'])){
-    $username = $_POST['username'];
+if (isset($_POST['login'])) {
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
-    $query = "select * from admin where username = '$username' && password = '$password' ";
-    $result = mysqli_query($conn,$query);
-    foreach($result as $row){
-        $img = $row["profileimg"];
-    }
 
-    if(mysqli_num_rows($result)>0){
-        echo "success";
+    $stmt = $conn->prepare("SELECT username, password FROM admin WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+
+    if ($row && $row['password'] === $password) {
         $_SESSION['adminuser'] = $username;
-        
-
         header("location: users.php");
+        exit;
     }
-    
 }
     
 ?>

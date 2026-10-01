@@ -2,16 +2,18 @@
     session_start();
     if(isset($_SESSION["adminuser"])){
         include("config.php");
-        if(isset($_GET["delete"])){
-            $id = $_GET["delete"];
-            $query = "delete from users where username = '$id'";
-            mysqli_query($con,$query);
+        if (isset($_GET["delete"])) {
+            $id = trim($_GET["delete"]);
+            $stmt = $conn->prepare("DELETE FROM users WHERE username = ?");
+            $stmt->bind_param("s", $id);
+            $stmt->execute();
         }
 
-        if(isset($_GET['block'])){
-            $blockuser =  $_GET['block'];
-            $sql = "update users set status = 'blocked' where username = '$blockuser'";
-            $conn->query($sql);
+        if (isset($_GET['block'])) {
+            $blockuser = trim($_GET['block']);
+            $stmt = $conn->prepare("UPDATE users SET status = 'blocked' WHERE username = ?");
+            $stmt->bind_param("s", $blockuser);
+            $stmt->execute();
 
             
         }

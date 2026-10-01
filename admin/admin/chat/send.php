@@ -1,16 +1,19 @@
 <?php
     session_start();
     require("config.php");
-    $user = $_SESSION['username'];
-    if(isset($_COOKIE['selected'])){
-        $message = $_POST['message'];
+    $user = $_SESSION['username'] ?? '';
+    if (isset($_COOKIE['selected']) && !empty($user)) {
+        $message  = trim($_POST['message'] ?? '');
         $selected = $_COOKIE['selected'];
-        $sql = "insert into chat (username,user,message,status) values('$user','$selected','$message','sender')";
-        $result = mysqli_query($conn,$sql);
-        $sql = "insert into chat (username,user,message,status) values('$selected','$user','$message','receiver')";
-        $result = mysqli_query($conn,$sql);
-        if(!$result){
-            echo "failed";
+        if (!empty($message)) {
+            $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'sender')");
+            $stmt->bind_param("sss", $user, $selected, $message);
+            $stmt->execute();
+            $stmt = $conn->prepare("INSERT INTO chat (username, user, message, status) VALUES (?, ?, ?, 'receiver')");
+            $stmt->bind_param("sss", $selected, $user, $message);
+            if (!$stmt->execute()) {
+                echo "failed";
+            }
         }
     }
 ?>
