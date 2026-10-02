@@ -9,16 +9,21 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-if (isset($_GET['search']) && $_GET['search'] !== '') {
-    $search = '%' . $_GET['search'] . '%';
-    $stmt = $conn->prepare("SELECT username AS user, profile FROM users WHERE username LIKE ?");
-    $stmt->bind_param("s", $search);
-} else {
-    $stmt = $conn->prepare("SELECT username, user, message, cid, MAX(time) AS abc, time FROM chat WHERE username = ? GROUP BY user ORDER BY abc DESC");
-    $stmt->bind_param("s", $user);
+try {
+    if (isset($_GET['search']) && $_GET['search'] !== '') {
+        $search = '%' . $_GET['search'] . '%';
+        $stmt = $conn->prepare("SELECT username AS user, profile FROM users WHERE username LIKE ?");
+        $stmt->bind_param("s", $search);
+    } else {
+        $stmt = $conn->prepare("SELECT username, user, message, cid, MAX(time) AS abc, time FROM chat WHERE username = ? GROUP BY user ORDER BY abc DESC");
+        $stmt->bind_param("s", $user);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("chatlist.php DB error: " . $e->getMessage());
+    exit;
 }
-$stmt->execute();
-$result = $stmt->get_result();
 
 while ($row = $result->fetch_assoc()) {
     $chatUser = $row['user'];

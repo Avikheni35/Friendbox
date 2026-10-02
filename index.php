@@ -8,15 +8,20 @@ if (!isset($_SESSION['username'])) {
 }
 
 if (isset($_POST["photopost"])) {
-    $caption  = $_POST['caption'];
+    $caption  = trim($_POST['caption'] ?? '');
     $username = $_SESSION['username'];
     $dest     = "./uploads/posts";
 
     $basename = safeUpload($_FILES["file"], $dest);
     if ($basename) {
-        $stmt = $conn->prepare("INSERT INTO photos (username, source, caption) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $basename, $caption);
-        $stmt->execute();
+        try {
+            $stmt = $conn->prepare("INSERT INTO photos (username, source, caption) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $username, $basename, $caption);
+            $stmt->execute();
+        } catch (mysqli_sql_exception $e) {
+            error_log("index.php post DB error: " . $e->getMessage());
+            echo '<script>alert("Post failed. Please try again.")</script>';
+        }
     } else {
         echo '<script>alert("Upload failed. Only JPG/PNG/GIF/WEBP up to 5MB allowed.")</script>';
     }

@@ -13,10 +13,15 @@ if (!isset($_COOKIE['selected'])) {
 
 $selected = $_COOKIE['selected'];
 
-$stmt = $conn->prepare("SELECT profile, username FROM users WHERE username = ?");
-$stmt->bind_param("s", $selected);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare("SELECT profile, username FROM users WHERE username = ?");
+    $stmt->bind_param("s", $selected);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("chathead.php DB error: " . $e->getMessage());
+    exit;
+}
 
 $username = '';
 $profile  = '';

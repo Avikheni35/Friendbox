@@ -8,35 +8,39 @@ if (isset($_SESSION['username'])) {
 }
 
 if (isset($_POST['login'])) {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row    = $result->fetch_assoc();
+    try {
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
 
-    if ($row && password_verify($password, $row['password'])) {
-        $_SESSION['username'] = $username;
-        $_SESSION['profile']  = $row['profile'];
-        $_SESSION['name']     = $row['name'];
-        $_SESSION['coverpic'] = $row['coverpic'];
-        header("location: index.php");
-        exit;
-    } else {
-        echo '<script>alert("Invalid username or password")</script>';
+        if ($row && password_verify($password, $row['password'])) {
+            $_SESSION['username'] = $username;
+            $_SESSION['profile']  = $row['profile'];
+            $_SESSION['name']     = $row['name'];
+            $_SESSION['coverpic'] = $row['coverpic'];
+            header("location: index.php");
+            exit;
+        } else {
+            echo '<script>alert("Invalid username or password")</script>';
+        }
+    } catch (mysqli_sql_exception $e) {
+        error_log("login.php DB error: " . $e->getMessage());
+        echo '<script>alert("Login failed. Please try again.")</script>';
     }
 }
 
 if (isset($_POST["register"])) {
     $dest  = "./uploads/profileimg";
     $dest2 = "./uploads/coverimg";
-    $name     = $_POST["name"];
-    $username = $_POST["username"];
-    $email    = $_POST["email"];
+    $name     = trim($_POST["name"]);
+    $username = trim($_POST["username"]);
+    $email    = trim($_POST["email"]);
     $pass     = password_hash($_POST["password"], PASSWORD_BCRYPT);
-    $phone    = $_POST["phone"];
+    $phone    = trim($_POST["phone"]);
 
     $basename = safeUpload($_FILES["file"], $dest);
     if (!$basename) {
@@ -46,12 +50,15 @@ if (isset($_POST["register"])) {
         if (!$basename2) {
             echo '<script>alert("Cover image upload failed. Only JPG/PNG/GIF/WEBP up to 5MB allowed.")</script>';
         } else {
-            $stmt = $conn->prepare("INSERT INTO users (username, name, password, email, phone, profile, coverpic) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssss", $username, $name, $pass, $email, $phone, $basename, $basename2);
-            if ($stmt->execute()) {
-                header("location: login.php");
-                exit;
-            } else {
+            try {
+                $stmt = $conn->prepare("INSERT INTO users (username, name, password, email, phone, profile, coverpic) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssssss", $username, $name, $pass, $email, $phone, $basename, $basename2);
+                if ($stmt->execute()) {
+                    header("location: login.php");
+                    exit;
+                }
+            } catch (mysqli_sql_exception $e) {
+                error_log("login.php register DB error: " . $e->getMessage());
                 echo '<script>alert("Registration failed. Username may already be taken.")</script>';
             }
         }

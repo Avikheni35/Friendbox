@@ -9,16 +9,21 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-if (isset($_GET["viewprofile"])) {
-    $viewuser = $_GET['viewprofile'];
-    $stmt = $conn->prepare("SELECT * FROM followings INNER JOIN users WHERE followings.username = ? AND users.username = followings.following");
-    $stmt->bind_param("s", $viewuser);
-} else {
-    $stmt = $conn->prepare("SELECT * FROM followings INNER JOIN users WHERE followings.username = ? AND users.username = followings.following");
-    $stmt->bind_param("s", $user);
+try {
+    if (isset($_GET["viewprofile"])) {
+        $viewuser = $_GET['viewprofile'];
+        $stmt = $conn->prepare("SELECT * FROM followings INNER JOIN users WHERE followings.username = ? AND users.username = followings.following");
+        $stmt->bind_param("s", $viewuser);
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM followings INNER JOIN users WHERE followings.username = ? AND users.username = followings.following");
+        $stmt->bind_param("s", $user);
+    }
+    $stmt->execute();
+    $followings = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("allfriends.php DB error: " . $e->getMessage());
+    exit;
 }
-$stmt->execute();
-$followings = $stmt->get_result();
 ?>
 <form action="viewprofile.php" method="get">
 <ul class="nearby-contct">

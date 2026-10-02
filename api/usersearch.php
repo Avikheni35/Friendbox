@@ -7,15 +7,21 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-if (isset($_GET['search']) && $_GET['search'] !== '') {
-    $search = '%' . $_GET['search'] . '%';
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username LIKE ?");
-    $stmt->bind_param("s", $search);
-} else {
-    $stmt = $conn->prepare("SELECT * FROM users");
+$query = trim($_GET['search'] ?? '');
+if ($query === '') {
+    exit;
 }
-$stmt->execute();
-$result = $stmt->get_result();
+
+try {
+    $search = '%' . $query . '%';
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username LIKE ? LIMIT 20");
+    $stmt->bind_param("s", $search);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("usersearch.php DB error: " . $e->getMessage());
+    exit;
+}
 
 while ($row = $result->fetch_assoc()) {
 ?>

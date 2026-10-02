@@ -9,10 +9,15 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-$stmt = $conn->prepare("SELECT * FROM users WHERE users.username NOT IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
-$stmt->bind_param("ss", $user, $user);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare("SELECT * FROM users WHERE users.username NOT IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
+    $stmt->bind_param("ss", $user, $user);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("suggestionsdata.php DB error: " . $e->getMessage());
+    exit;
+}
 ?>
 <style>
     .flist .sugg .widget, .listbox { height: 40vh; overflow-y: scroll; }

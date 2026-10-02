@@ -9,10 +9,15 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-$stmt = $conn->prepare("SELECT * FROM followers INNER JOIN users WHERE followers.username = ? AND users.username = followers.followedby");
-$stmt->bind_param("s", $user);
-$stmt->execute();
-$followers = $stmt->get_result();
+try {
+    $stmt = $conn->prepare("SELECT * FROM followers INNER JOIN users WHERE followers.username = ? AND users.username = followers.followedby");
+    $stmt->bind_param("s", $user);
+    $stmt->execute();
+    $followers = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("followers.php DB error: " . $e->getMessage());
+    exit;
+}
 ?>
 <form action="viewprofile.php" method="get">
 <ul class="nearby-contct">

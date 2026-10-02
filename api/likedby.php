@@ -12,11 +12,17 @@ if (!isset($_POST['pid'])) {
 }
 
 $pid = (int)$_POST['pid'];
+if ($pid <= 0) exit;
 
-$stmt = $conn->prepare("SELECT likedby, users.name, users.username, users.profile FROM likes JOIN users WHERE likes.pid = ? AND likes.likedby = users.username");
-$stmt->bind_param("i", $pid);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare("SELECT likedby, users.name, users.username, users.profile FROM likes JOIN users WHERE likes.pid = ? AND likes.likedby = users.username");
+    $stmt->bind_param("i", $pid);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("likedby.php DB error: " . $e->getMessage());
+    exit;
+}
 ?>
 <p>Liked By</p>
 <form action="viewprofile.php">

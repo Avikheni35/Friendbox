@@ -18,10 +18,15 @@ if (isset($_GET['selected'])) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT * FROM chat WHERE username = ? AND user = ? ORDER BY cid DESC");
-$stmt->bind_param("ss", $user, $selected);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare("SELECT * FROM chat WHERE username = ? AND user = ? ORDER BY cid DESC");
+    $stmt->bind_param("ss", $user, $selected);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("chatting.php DB error: " . $e->getMessage());
+    exit;
+}
 
 while ($row = $result->fetch_assoc()) {
     $isSender = ($row['username'] === $user && $row['status'] === 'sender');

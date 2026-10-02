@@ -9,16 +9,21 @@ if (!isset($_SESSION['username'])) {
 
 $user = $_SESSION['username'];
 
-if (isset($_GET['viewprofile'])) {
-    $viewuser = $_GET['viewprofile'];
-    $stmt = $conn->prepare("SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
-    $stmt->bind_param("ss", $viewuser, $viewuser);
-} else {
-    $stmt = $conn->prepare("SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
-    $stmt->bind_param("ss", $user, $user);
+try {
+    if (isset($_GET['viewprofile'])) {
+        $viewuser = $_GET['viewprofile'];
+        $stmt = $conn->prepare("SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
+        $stmt->bind_param("ss", $viewuser, $viewuser);
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM users WHERE users.username IN (SELECT following FROM followings WHERE followings.username = ?) AND users.username <> ?");
+        $stmt->bind_param("ss", $user, $user);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (mysqli_sql_exception $e) {
+    error_log("friendlist.php DB error: " . $e->getMessage());
+    exit;
 }
-$stmt->execute();
-$result = $stmt->get_result();
 ?>
 <style>
     .addbtn { color: #088dcd; border: none; background-color: transparent; }
