@@ -1,26 +1,24 @@
 *.php linguist-language=PHP
 
-# Minified / generated files (not authored)
-assets/css/main.min.css linguist-vendored=true
+# Root assets — minified/generated/vendor files
+assets/css/** linguist-vendored=true
 assets/js/main.min.js linguist-vendored=true
 assets/js/*.min.js linguist-vendored=true
-assets/fonts/** linguist-vendored=true
-
-# Large third-party chart library and world map data
 assets/js/echarts.min.js linguist-vendored=true
 assets/js/world.js linguist-vendored=true
 assets/js/strip.pkgd.min.js linguist-vendored=true
+assets/fonts/** linguist-vendored=true
 
-# Admin minified / generated files
-admin/css/main.min.css linguist-vendored=true
-admin/js/main.min.js linguist-vendored=true
-admin/js/*.min.js linguist-vendored=true
-admin/js/echarts.min.js linguist-vendored=true
-admin/js/world.js linguist-vendored=true
-admin/js/strip.pkgd.min.js linguist-vendored=true
+# Admin theme CSS and JS (copied from admin template, not authored)
+admin/css/** linguist-vendored=true
+admin/js/** linguist-vendored=true
+
+# Admin panel authored CSS (large login.css etc. are template files)
+admin/admin/*.css linguist-vendored=true
+admin/admin/chat/css/** linguist-vendored=true
 
 # Admin vendor libraries (bootstrap, jquery, fontawesome, etc.)
 admin/assets/vendor/** linguist-vendored=true
 
-# Admin theme distributed assets (not authored in this project)
+# Admin theme distributed assets
 admin/assets/custom/** linguist-vendored=true
